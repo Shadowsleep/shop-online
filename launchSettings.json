@@ -4,7 +4,9 @@
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
       "serviceActions": {
-        "orders.api": "StartDebugging"
+        "orders.api": "StartDebugging",
+        "payments.api": "StartDebugging",
+        "notifications.api": "StartDebugging"
       }
     }
   }

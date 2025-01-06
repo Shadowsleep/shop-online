@@ -1,12 +1,9 @@
 services:
   orders.api:
-    image: ${DOCKER_REGISTRY-}ordersapi
+    image: ordersapi
     build:
       context: .
       dockerfile: src/Orders.Api/Dockerfile
-    ports:
-      - "8080:8080"
-      - "8081:8081" 
   
   mongo-express:
     image: mongo-express
@@ -31,3 +28,29 @@ services:
       - "27017:27017"
     volumes:
       - /volumes/mongoDb:/data/db
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    hostname: "rabbitMQ"
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    labels:
+      NAME: "rabbitmq"
+
+  payments.api:
+    image: paymentsapi
+    build:
+      context: .
+      dockerfile: src/Payments.Api/Dockerfile
+
+  notifications.api:
+    image: notificationsapi
+    build:
+      context: .
+      dockerfile: src/Notifications.Api/Dockerfile
+

@@ -2,6 +2,7 @@
 using Orders.Core.Entitites;
 using Orders.Core.Repositories;
 using Orders.Core.ValueObjects;
+using Orders.Infrastructure.MessageBus;
 
 namespace Orders.Application.Commands
 {
@@ -88,13 +89,20 @@ namespace Orders.Application.Commands
     }
 
 
-    public class AddOrderHandler(IOrderRepository repository) : IRequestHandler<AddOrder, Guid>
+    public class AddOrderHandler(IOrderRepository repository, IMessageBusClient messageBus) : IRequestHandler<AddOrder, Guid>
     {
+        private const string Exchange = "order-service";
+        private const string RoutingKey = "order-created";
+
         public async Task<Guid> Handle(AddOrder request, CancellationToken cancellationToken)
         {
             var order = request.ToEntity();
             await repository.Add(order);
 
+            foreach(var item in order.Events)
+            {
+                messageBus.Pubish(item, RoutingKey, Exchange);
+            }
             return order.Id;
         }
     }

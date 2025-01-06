@@ -4,6 +4,7 @@ using Orders.Application;
 using Orders.Infrastructure;
 using Orders.Infrastructure.Repositories;
 using MongoDB.Bson.Serialization;
+using Orders.Api.Consumers;
 
 internal class Program
 {
@@ -17,11 +18,12 @@ internal class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddLogging();
 
-
+        builder.Services.AddHostedService<PaymentAcceptedConsumer>();
         //Dependencies
         builder.Services.ConfigurationServicesOrderApplication();
-        builder.Services.ConfigurationServicesOrderInfrastructure();
+        builder.Services.ConfigurationServicesOrderInfrastructure(builder.Configuration);
 
         ConfigMongo(builder);
 
