@@ -25,7 +25,7 @@ internal class Program
         builder.Services.ConfigurationServicesOrderApplication();
         builder.Services.ConfigurationConsul(builder.Configuration);
         builder.Services.ConfigurationServicesOrderInfrastructure(builder.Configuration);
-
+        builder.Services.ConfigurationRedis(builder.Configuration);
         ConfigMongo(builder);
 
         var app = builder.Build();

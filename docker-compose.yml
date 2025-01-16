@@ -1,71 +1,101 @@
 services:
- 
+    redis:
+        image: docker.io/bitnami/redis:6.2
+        container_name: redis
+        environment:
+          - ALLOW_EMPTY_PASSWORD=yes
+          - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+        ports:
+          - '6379:6379'
+        volumes:
+          - '/volumes/redis:/bitnami/redis/data'
 
-  mongo-express:
-    image: mongo-express
-    ports:
-      - "8088:8081"
-    environment:
-      ME_CONFIG_BASICAUTH_USERNAME: teste
-      ME_CONFIG_BASICAUTH_PASSWORD: teste
-      ME_CONFIG_MONGODB_PORT: 27017
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: teste
-      ME_CONFIG_MONGODB_URL: mongodb://root:teste@mongo:27017/
-    links:
-      - mongo
+    mongo-express:
+        image: mongo-express
+        ports:
+          - "8088:8081"
+        environment:
+          ME_CONFIG_BASICAUTH_USERNAME: teste
+          ME_CONFIG_BASICAUTH_PASSWORD: teste
+          ME_CONFIG_MONGODB_PORT: 27017
+          ME_CONFIG_MONGODB_ADMINUSERNAME: root
+          ME_CONFIG_MONGODB_ADMINPASSWORD: teste
+          ME_CONFIG_MONGODB_URL: mongodb://root:teste@mongo:27017/
+        links:
+          - mongo
+        depends_on:
+          - mongo
   
-  mongo:
-    image: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: teste
-    ports:
-      - "27017:27017"
-    volumes:
-      - /volumes/mongoDb:/data/db
+    mongo:
+        image: mongo
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: teste
+        ports:
+          - "27017:27017"
+        volumes:
+          - /volumes/mongoDb:/data/db
 
-  rabbitmq:
-    image: "rabbitmq:3-management"
-    hostname: "rabbitMQ"
-    environment:
-      RABBITMQ_DEFAULT_USER: "rabbitmq"
-      RABBITMQ_DEFAULT_PASS: "rabbitmq"
-      RABBITMQ_DEFAULT_VHOST: "/"
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    labels:
-      NAME: "rabbitmq"
+    rabbitmq:
+        image: "rabbitmq:3-management"
+        hostname: "rabbitMQ"
+        environment:
+          RABBITMQ_DEFAULT_USER: "rabbitmq"
+          RABBITMQ_DEFAULT_PASS: "rabbitmq"
+          RABBITMQ_DEFAULT_VHOST: "/"
+        ports:
+          - "15672:15672"
+          - "5672:5672"
+        labels:
+          NAME: "rabbitmq"
 
-  payments.api:
-    image: paymentsapi
-    build:
-      context: .
-      dockerfile: src/Payments.Api/Dockerfile
+    payments.api:
+        image: paymentsapi
+        build:
+          context: .
+          dockerfile: src/Payments.Api/Dockerfile
+        depends_on:
+          - rabbitmq
+          - redis
+          - mongo
 
-  notifications.api:
-    image: notificationsapi
-    build:
-      context: .
-      dockerfile: src/Notifications.Api/Dockerfile
+    notifications.api:
+        image: notificationsapi
+        build:
+          context: .
+          dockerfile: src/Notifications.Api/Dockerfile
+        depends_on:
+          - rabbitmq
+          - redis
+          - mongo
 
-  orders.api:
-    image: ordersapi
-    build:
-      context: .
-      dockerfile: src/Orders.Api/Dockerfile
+    orders.api:
+        image: ordersapi
+        build:
+          context: .
+          dockerfile: src/Orders.Api/Dockerfile
+        depends_on:
+          - rabbitmq
+          - redis
+          - mongo
   
-  customers.api:
-    image: ${DOCKER_REGISTRY-}customersapi
-    build:
-      context: .
-      dockerfile: src/Customers.Api/Dockerfile
+    customers.api:
+        image: ${DOCKER_REGISTRY-}customersapi
+        build:
+          context: .
+          dockerfile: src/Customers.Api/Dockerfile
+        depends_on:
+          - rabbitmq
+          - redis
+          - mongo
 
-
-  gateway.api:
-    image: ${DOCKER_REGISTRY-}gatewayapi
-    build:
-      context: .
-      dockerfile: src/Gateway.Api/Dockerfile
-
+    gateway.api:
+        image: ${DOCKER_REGISTRY-}gatewayapi
+        build:
+          context: .
+          dockerfile: src/Gateway.Api/Dockerfile
+        depends_on:
+          - customers.api
+          - orders.api
+          - notifications.api
+          - payments.api

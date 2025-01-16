@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Orders.Core.Repositories;
+using Orders.Infrastructure.CacheStorage;
 using Orders.Infrastructure.MessageBus;
 using Orders.Infrastructure.Repositories;
 using Orders.Infrastructure.ServiceDiscovery;
@@ -16,6 +17,7 @@ namespace Orders.Infrastructure
         public static void ConfigurationServicesOrderInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<ICacheService,RedisCacheService>();
             services.AddTransient<IServiceDiscovery, ConsulService>();
             services.AddSingleton<IMessageBusClient, RabbitMqClient>();
 
@@ -34,6 +36,14 @@ namespace Orders.Infrastructure
             var connection = connectionFactory.CreateConnection("order-service-producer");
 
             services.AddSingleton(connection);
+        }
+        public static void ConfigurationRedis(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.InstanceName = "orders-service";
+                options.Configuration = configuration.GetConnectionString("redis");
+            });
         }
 
         public static void ConfigurationConsul(this IServiceCollection services, IConfiguration configuration)
