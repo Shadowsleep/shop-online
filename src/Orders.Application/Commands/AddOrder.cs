@@ -3,6 +3,7 @@ using Orders.Core.Entitites;
 using Orders.Core.Repositories;
 using Orders.Core.ValueObjects;
 using Orders.Infrastructure.MessageBus;
+using Orders.Infrastructure.ServiceDiscovery;
 
 namespace Orders.Application.Commands
 {
@@ -89,13 +90,17 @@ namespace Orders.Application.Commands
     }
 
 
-    public class AddOrderHandler(IOrderRepository repository, IMessageBusClient messageBus) : IRequestHandler<AddOrder, Guid>
+    public class AddOrderHandler(IOrderRepository repository, IMessageBusClient messageBus,IServiceDiscovery serviceDiscovery) : IRequestHandler<AddOrder, Guid>
     {
         private const string Exchange = "order-service";
         private const string RoutingKey = "order-created";
 
         public async Task<Guid> Handle(AddOrder request, CancellationToken cancellationToken)
         {
+            var teste = await serviceDiscovery.GetServiceDiscoveryUriAsync("Orders-Service", "HealthCkeck");
+            Console.WriteLine(teste.ToString());
+
+
             var order = request.ToEntity();
             await repository.Add(order);
 

@@ -23,6 +23,7 @@ internal class Program
         builder.Services.AddHostedService<PaymentAcceptedConsumer>();
         //Dependencies
         builder.Services.ConfigurationServicesOrderApplication();
+        builder.Services.ConfigurationConsul(builder.Configuration);
         builder.Services.ConfigurationServicesOrderInfrastructure(builder.Configuration);
 
         ConfigMongo(builder);
@@ -39,7 +40,7 @@ internal class Program
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+        app.UseConsul();
 
         app.MapControllers();
 

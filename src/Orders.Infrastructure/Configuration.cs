@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Consul;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Orders.Core.Repositories;
 using Orders.Infrastructure.MessageBus;
 using Orders.Infrastructure.Repositories;
+using Orders.Infrastructure.ServiceDiscovery;
 using RabbitMQ.Client;
 
 namespace Orders.Infrastructure
@@ -12,7 +16,7 @@ namespace Orders.Infrastructure
         public static void ConfigurationServicesOrderInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<IOrderRepository, OrderRepository>();
-
+            services.AddTransient<IServiceDiscovery, ConsulService>();
             services.AddSingleton<IMessageBusClient, RabbitMqClient>();
 
             var hostName = configuration["rabbitmq:host"];
@@ -32,5 +36,38 @@ namespace Orders.Infrastructure
             services.AddSingleton(connection);
         }
 
+        public static void ConfigurationConsul(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddSingleton<IConsulClient, ConsulClient>(p =>
+                new ConsulClient(con =>
+                {
+                    var address = configuration["consul:host"];
+                    con.Address = new Uri(address);
+                })
+            );
+        }
+
+        public static void UseConsul(this IApplicationBuilder builder)
+        {
+            var consulClient = builder.ApplicationServices.GetRequiredService<IConsulClient>();
+            var lifetime = builder.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+
+            var registration = new AgentServiceRegistration()
+            {
+                ID = "orders-service",
+                Name = "Orders-Service",
+                Address = "localhost",
+                Port = 6000
+            };
+
+            consulClient.Agent.ServiceDeregister(registration.ID).ConfigureAwait(true);
+            consulClient.Agent.ServiceRegister(registration).ConfigureAwait(true);
+
+            lifetime.ApplicationStopping.Register(async () =>
+            {
+                Console.WriteLine("Deregistering from Consul");
+                await consulClient.Agent.ServiceDeregister(registration.ID);
+            });
+        }
     }
 }

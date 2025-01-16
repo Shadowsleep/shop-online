@@ -9,7 +9,6 @@ namespace Orders.Api.Controllers
     [ApiController]
     public class OrderController(IMediator mediator) : ControllerBase
     {
-
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {

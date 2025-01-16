@@ -1,10 +1,6 @@
 services:
-  orders.api:
-    image: ordersapi
-    build:
-      context: .
-      dockerfile: src/Orders.Api/Dockerfile
-  
+ 
+
   mongo-express:
     image: mongo-express
     ports:
@@ -53,4 +49,23 @@ services:
     build:
       context: .
       dockerfile: src/Notifications.Api/Dockerfile
+
+  orders.api:
+    image: ordersapi
+    build:
+      context: .
+      dockerfile: src/Orders.Api/Dockerfile
+  
+  customers.api:
+    image: ${DOCKER_REGISTRY-}customersapi
+    build:
+      context: .
+      dockerfile: src/Customers.Api/Dockerfile
+
+
+  gateway.api:
+    image: ${DOCKER_REGISTRY-}gatewayapi
+    build:
+      context: .
+      dockerfile: src/Gateway.Api/Dockerfile
 

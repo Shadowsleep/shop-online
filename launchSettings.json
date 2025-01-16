@@ -6,7 +6,9 @@
       "serviceActions": {
         "orders.api": "StartDebugging",
         "payments.api": "StartDebugging",
-        "notifications.api": "StartDebugging"
+        "notifications.api": "StartDebugging",
+        "customers.api": "StartDebugging",
+        "gateway.api": "StartDebugging"
       }
     }
   }
