@@ -97,10 +97,6 @@ namespace Orders.Application.Commands
 
         public async Task<Guid> Handle(AddOrder request, CancellationToken cancellationToken)
         {
-            var teste = await serviceDiscovery.GetServiceDiscoveryUriAsync("Orders-Service", "HealthCkeck");
-            Console.WriteLine(teste.ToString());
-
-
             var order = request.ToEntity();
             await repository.Add(order);
 

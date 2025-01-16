@@ -9,7 +9,7 @@ namespace Notifications.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> HealthCkeck()
         {
-            return await Task.FromResult(Ok("teste realizado"));
+            return await Task.FromResult(Ok());
         }
     }
 }
